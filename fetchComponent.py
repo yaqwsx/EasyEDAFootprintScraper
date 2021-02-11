@@ -104,8 +104,14 @@ def getComponentSymbol(componentDetail):
         ]
     }
     
-    for text in ["canvas", "shape", "BBox"]:
+    for text in ["canvas", "BBox"]:
         sch["schematics"][0]["dataStr"][text] = componentDetail["dataStr"][text]
+    
+    shape = "LIB~-5~5~package`" + componentDetail["packageDetail"]["title"] + "`BOM_Supplier`LCSC`BOM_Supplier Part`" + componentDetail["lcsc"]["number"] + "`BOM_Manufacturer`" + componentDetail["dataStr"]["head"]["c_para"]["BOM_Manufacturer"] + "`BOM_Manufacturer Part`" + componentDetail["dataStr"]["head"]["c_para"]["BOM_Manufacturer Part"] + "`Contributor`" + componentDetail["dataStr"]["head"]["c_para"]["Contributor"] + "`spicePre`" + componentDetail["dataStr"]["head"]["c_para"]["pre"][:-1] + "`spiceSymbolName`" + componentDetail["dataStr"]["head"]["c_para"]["name"] + "`~~0~gge03d9a0f3a4a33646~" + componentDetail["uuid"] + "~052918e6192f4a27891c8ca5941aa6aa~0~~yes~yes"
+    for line in componentDetail["dataStr"]["shape"]:
+        shape += "#@$"
+        shape += line
+    sch["schematics"][0]["dataStr"]["shape"] = [shape]
     
     return sch
 
@@ -150,6 +156,7 @@ def easyEdaToKicad(symbolJson, boardJson):
         with open(boardFilename, "w") as easyFile:
             easyFile.write(json.dumps(boardJson, indent=4))
         subprocess.check_call(["easyeda2kicad", boardFilename, kicadFilename])
+        os.system("./LC2KiCad/build/lc2kicad -v ./symbol.json -a ENL:1")
         return pcbnew.LoadBoard(kicadFilename)
 
 def validateLibName(lib):

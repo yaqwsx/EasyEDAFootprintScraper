@@ -1,0 +1,3 @@
+[submodule "LC2KiCad"]
+	path = LC2KiCad
+	url = https://github.com/RigoLigoRLC/LC2KiCad.git
