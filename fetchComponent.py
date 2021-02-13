@@ -76,6 +76,45 @@ def fetchCompnentDetails(componetUuid, token=None, cookies=None):
         data={})
     return res.json()["result"]
 
+def getComponentSymbol(componentDetail):
+    sch = {
+        "editorVersion": "6.4.14",
+        "docType": "5",
+        "title": "TempSch",
+        "description": "",
+        "colors": {},
+        "schematics": [
+        {
+            "docType": "1",
+            "title": "Sheet_1",
+            "description": "",
+            "dataStr": {
+            "head": {
+                "docType": "1",
+                "editorVersion": "6.4.14",
+                "newgId": True,
+                "c_para": {
+                "Prefix Start": "1"
+                },
+                "c_spiceCmd": None
+            },
+            "colors": {}
+            }
+        }
+        ]
+    }
+    
+    for text in ["canvas", "BBox"]:
+        sch["schematics"][0]["dataStr"][text] = componentDetail["dataStr"][text]
+    
+    shape = "LIB~-5~5~package`" + componentDetail["packageDetail"]["title"] + "`BOM_Supplier`LCSC`BOM_Supplier Part`" + componentDetail["lcsc"]["number"] + "`BOM_Manufacturer`" + componentDetail["dataStr"]["head"]["c_para"]["BOM_Manufacturer"] + "`BOM_Manufacturer Part`" + componentDetail["dataStr"]["head"]["c_para"]["BOM_Manufacturer Part"] + "`Contributor`" + componentDetail["dataStr"]["head"]["c_para"]["Contributor"] + "`spicePre`" + componentDetail["dataStr"]["head"]["c_para"]["pre"][:-1] + "`spiceSymbolName`" + componentDetail["dataStr"]["head"]["c_para"]["name"] + "`~~0~gge03d9a0f3a4a33646~" + componentDetail["uuid"] + "~052918e6192f4a27891c8ca5941aa6aa~0~~yes~yes"
+    for line in componentDetail["dataStr"]["shape"]:
+        shape += "#@$"
+        shape += line
+    sch["schematics"][0]["dataStr"]["shape"] = [shape]
+    
+    return sch
+
 def getComponentPackageName(componentInfo):
     return componentInfo["dataStr"]["head"]["c_para"]["package"]
 
@@ -103,16 +142,20 @@ def buildPackageBoard(packageInfo):
     board["shape"] = [shape]
     return board
 
-def easyEdaToKicad(boardJson):
+def easyEdaToKicad(symbolJson, boardJson):
     """
     Convert board JSON, return pcbnew.BOARD
     """
     with TemporaryDirectory() as tmpDir:
-        easyFilename = os.path.join(tmpDir, "board.json")
+        symbolFilename = os.path.join(tmpDir, "symbol.json")
+        boardFilename = os.path.join(tmpDir, "board.json")
         kicadFilename = os.path.join(tmpDir, "board.kicad_pcb")
-        with open(easyFilename, "w") as easyFile:
+        with open(symbolFilename, "w") as schFile:
+            schFile.write(json.dumps(symbolJson, indent=2))
+        with open(boardFilename, "w") as easyFile:
             easyFile.write(json.dumps(boardJson, indent=4))
-        subprocess.check_call(["easyeda2kicad", easyFilename, kicadFilename])
+        subprocess.check_call(["easyeda2kicad", boardFilename, kicadFilename])
+        os.system("./LC2KiCad/build/lc2kicad -v " + symbolFilename + " -a ENL:1")
         return pcbnew.LoadBoard(kicadFilename)
 
 def validateLibName(lib):
@@ -161,9 +204,10 @@ def footprintExists(lib, name):
 def fetchAndConvert(componentInfo, token, cookies):
     uuid = componentInfo["dataStr"]["head"]["uuid"]
     details = fetchCompnentDetails(uuid, token, cookies)
+    schSymbol = getComponentSymbol(details)
     package = getComponentPackage(details)
     packageBoard = buildPackageBoard(package)
-    kicadBoard = easyEdaToKicad(packageBoard)
+    kicadBoard = easyEdaToKicad(schSymbol, packageBoard)
     footprint = extractFirstFootprint(kicadBoard)
     postProcessFootprint(footprint)
 
