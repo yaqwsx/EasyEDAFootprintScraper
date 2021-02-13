@@ -147,8 +147,7 @@ def easyEdaToKicad(symbolJson, boardJson):
     Convert board JSON, return pcbnew.BOARD
     """
     with TemporaryDirectory() as tmpDir:
-        #symbolFilename = os.path.join(tmpDir, "symbol.json")
-        symbolFilename = "./symbol.json"
+        symbolFilename = os.path.join(tmpDir, "symbol.json")
         boardFilename = os.path.join(tmpDir, "board.json")
         kicadFilename = os.path.join(tmpDir, "board.kicad_pcb")
         with open(symbolFilename, "w") as schFile:
@@ -156,7 +155,7 @@ def easyEdaToKicad(symbolJson, boardJson):
         with open(boardFilename, "w") as easyFile:
             easyFile.write(json.dumps(boardJson, indent=4))
         subprocess.check_call(["easyeda2kicad", boardFilename, kicadFilename])
-        os.system("./LC2KiCad/build/lc2kicad -v ./symbol.json -a ENL:1")
+        os.system("./LC2KiCad/build/lc2kicad -v " + symbolFilename + " -a ENL:1")
         return pcbnew.LoadBoard(kicadFilename)
 
 def validateLibName(lib):
