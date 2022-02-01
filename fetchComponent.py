@@ -131,7 +131,7 @@ def ensure3DLib(lib):
     Path(lib).mkdir(exist_ok=True, parents=True)
 
 def extractFirstFootprint(board):
-    for f in board.GetModules():
+    for f in board.GetFootprints():
         return f
 
 def topMiddle(rect):
@@ -144,7 +144,7 @@ def postProcessFootprint(footprint):
     footprint.Reference().SetVisible(False)
     footprint.Value().SetVisible(False)
 
-    bbox = footprint.GetFootprintRect()
+    bbox = footprint.GetBoundingBox(False, False)
     refPos = topMiddle(bbox) + pcbnew.wxPoint(0, -footprint.Reference().GetTextHeight())
     valuePos = bottomMiddle(bbox) + pcbnew.wxPoint(0, +footprint.Reference().GetTextHeight())
 
@@ -194,7 +194,7 @@ def fetchAndConvert3D(componentDetail, kicadlib, pathvar, token, cookies):
             f.write(res.text)
         subprocess.check_call(["ctmconv", objFile, wrlFile])
 
-        desc = pcbnew.MODULE_3D_SETTINGS()
+        desc = pcbnew.FP_3DMODEL()
         desc.m_Filename = "${" + pathvar + "}/" + wrlFile
         desc.m_Scale.x = desc.m_Scale.y = desc.m_Scale.z = 1 / 2.54
         desc.m_Rotation.z = 180
@@ -236,8 +236,7 @@ def fetchLcsc(kicadlib, force, lcsc, pathvar):
     for model in models:
         footprint.Add3DModel(model)
 
-    pcbnew.PCB_IO().FootprintSave(kicadlib, footprint)
-    print("Warning: Python will crash now as the KiCAD improperly defines SWIG handles and double free occurs")
+    pcbnew.FootprintSave(kicadlib, footprint)
 
 @click.command()
 @click.argument("name")
