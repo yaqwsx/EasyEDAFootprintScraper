@@ -8,6 +8,7 @@ everything might not work.**
 - KiCAD
 - [easyeda2kicad](https://github.com/wokwi/easyeda2kicad)
 - [ctmconv](http://openctm.sourceforge.net/)
+- Please read build instructions for the required LC2KiCad module in `./LC2KiCad/README.md`
 
 ## Trying it out
 
