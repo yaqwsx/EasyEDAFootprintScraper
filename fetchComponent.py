@@ -125,7 +125,7 @@ def ensureKicadLib(lib):
     """
     if os.path.exists(lib):
         return
-    pcbnew.PCB_IO().FootprintLibCreate(lib)
+    pcbnew.FootprintLibCreate(lib)
 
 def ensure3DLib(lib):
     Path(lib).mkdir(exist_ok=True, parents=True)
