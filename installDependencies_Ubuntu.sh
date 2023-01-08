@@ -1,4 +1,4 @@
-add-apt-repository --yes ppa:kicad/kicad-5.1-releases
+add-apt-repository --yes ppa:kicad/kicad-6.0-releases
 apt update
 apt install -y --install-recommends kicad
 apt update
