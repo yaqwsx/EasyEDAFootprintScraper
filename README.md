@@ -17,9 +17,18 @@ Just run:
 ```
 
 It will create a KiCAD library `test.pretty` and `test.3dshapes` in the working
-directory. There will be a footprint for component C558438and a corresponding 3D
+directory. There will be a footprint for component C558438 and a corresponding 3D
 model. To actually view the 3D models in KiCAD, you have to configure a KiCAD
 variable `EASY_EDA_3D` pointing to a directory with `test.3dshapes`.
+
+### Docker
+On macOS and Windows, it's a pain to expose the Kicad Python interface and install ctmconv. Instead, running inside Docker works perfectly to grab footprints and 3D models - no dependencies needed on the host system.
+
+1. Build the docker container (run from the root of this repository).
+  `docker build . --tag=fetchcomponent`
+2. Run the container.
+  `docker run --rm -v $(pwd):/output fetchcomponent fetchlcsc --kicadLib /output/test.pretty --force C558438`
+
 
 ## Known issues
 
