@@ -168,13 +168,13 @@ def ensureKicadLib(lib):
     """
     if os.path.exists(lib):
         return
-    pcbnew.PCB_IO().FootprintLibCreate(lib)
+    pcbnew.FootprintLibCreate(lib)
 
 def ensure3DLib(lib):
     Path(lib).mkdir(exist_ok=True, parents=True)
 
 def extractFirstFootprint(board):
-    for f in board.GetModules():
+    for f in board.Footprints():
         return f
 
 def topMiddle(rect):
@@ -187,7 +187,7 @@ def postProcessFootprint(footprint):
     footprint.Reference().SetVisible(False)
     footprint.Value().SetVisible(False)
 
-    bbox = footprint.GetFootprintRect()
+    bbox = footprint.GetBoundingBox(False, False)
     refPos = topMiddle(bbox) + pcbnew.wxPoint(0, -footprint.Reference().GetTextHeight())
     valuePos = bottomMiddle(bbox) + pcbnew.wxPoint(0, +footprint.Reference().GetTextHeight())
 
@@ -202,7 +202,8 @@ def footprintExists(lib, name):
     return os.path.exists(os.path.join(lib, name + ".kicad_mod"))
 
 def fetchAndConvert(componentInfo, token, cookies):
-    uuid = componentInfo["dataStr"]["head"]["uuid"]
+    #uuid = componentInfo["dataStr"]["head"]["uuid"]
+    uuid = componentInfo["uuid"]
     details = fetchCompnentDetails(uuid, token, cookies)
     schSymbol = getComponentSymbol(details)
     package = getComponentPackage(details)
@@ -238,7 +239,7 @@ def fetchAndConvert3D(componentDetail, kicadlib, pathvar, token, cookies):
             f.write(res.text)
         subprocess.check_call(["ctmconv", objFile, wrlFile])
 
-        desc = pcbnew.MODULE_3D_SETTINGS()
+        desc = pcbnew.FP_3DMODEL()
         desc.m_Filename = "${" + pathvar + "}/" + wrlFile
         desc.m_Scale.x = desc.m_Scale.y = desc.m_Scale.z = 1 / 2.54
         desc.m_Rotation.z = 180
@@ -280,7 +281,7 @@ def fetchLcsc(kicadlib, force, lcsc, pathvar):
     for model in models:
         footprint.Add3DModel(model)
 
-    pcbnew.PCB_IO().FootprintSave(kicadlib, footprint)
+    pcbnew.FootprintSave(kicadlib, footprint)
     print("Warning: Python will crash now as the KiCAD improperly defines SWIG handles and double free occurs")
 
 @click.command()
