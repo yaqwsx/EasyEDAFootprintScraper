@@ -65,7 +65,7 @@ def searchComponents(text, token=None, cookies=None):
 
 def getComponentInfo(lcscCode, token=None, cookies=None):
     for component in searchComponents(lcscCode, token, cookies):
-        if component["dataStr"]["head"]["c_para"]["BOM_Supplier Part"] == lcscCode:
+        if component["dataStr"]["head"]["c_para"]["Supplier Part"] == lcscCode:
             return component
 
 def fetchCompnentDetails(componetUuid, token=None, cookies=None):
@@ -148,8 +148,8 @@ def postProcessFootprint(footprint):
     refPos = topMiddle(bbox) + pcbnew.wxPoint(0, -footprint.Reference().GetTextHeight())
     valuePos = bottomMiddle(bbox) + pcbnew.wxPoint(0, +footprint.Reference().GetTextHeight())
 
-    footprint.Reference().SetPosition(refPos)
-    footprint.Value().SetPosition(valuePos)
+    footprint.Reference().SetPosition(pcbnew.VECTOR2I(refPos))
+    footprint.Value().SetPosition(pcbnew.VECTOR2I(valuePos))
 
     footprint.Reference().SetVisible(True)
     footprint.Value().SetVisible(True)
